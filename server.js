@@ -1,6 +1,7 @@
 const http = require('http');
 const { Server } = require('socket.io');
 const app = require('./src/app');
+const db = require('./src/database/db');
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -13,17 +14,23 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
     
     socket.on('join_exam', (data) => {
+        const { matricule } = data;
+        const time = new Date().toLocaleString('fr-FR');
+
+        db.run(`INSERT INTO logs (matricule, action, timestamp) VALUES (?, ?, ?)`, 
+            [matricule, 'CONNEXION', time]
+        );
+
         socket.join("exam_room");
-        io.emit('student_connected', {
-            matricule: data.matricule,
-            time: new Date().toLocaleString('fr-FR')
-        });
+        io.emit('student_connected', { matricule, time });
     });
 
     socket.on('disconnect', () => {
-        io.emit('student_disconnected', {
-            id: socket.id,
-            time: new Date().toLocaleString('fr-FR')
+        const time = new Date().toLocaleString('fr-FR');
+        
+        io.emit('student_disconnected', { 
+            id: socket.id, 
+            time: time 
         });
     });
 });

@@ -46,6 +46,14 @@ db.serialize(() => {
         matricule TEXT,
         last_update DATETIME
     )`);
+    
+    db.run(`CREATE TABLE IF NOT EXISTS logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    matricule TEXT,
+    action TEXT,
+    timestamp TEXT
+    )`);
+
 });
 
 module.exports = db;
