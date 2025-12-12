@@ -1,13 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const logController = require('../controllers/logController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-router.get('/', logController.getAllLogs);
+router.get('/', authMiddleware.isProf, logController.getAllLogs);
+router.get('/:matricule', authMiddleware.isProf, logController.getLogsByMatricule);
 
-router.get('/:matricule', logController.getLogsByMatricule);
-
-router.delete('/:id', logController.deleteLogEntry);
-
-router.delete('/clear', logController.clearAllLogs);
+router.delete('/:id', authMiddleware.isProf, logController.deleteLogEntry);
+router.delete('/clear', authMiddleware.isProf, logController.clearAllLogs);
 
 module.exports = router;

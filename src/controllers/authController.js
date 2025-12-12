@@ -86,13 +86,11 @@ exports.updateUser = (req, res) => {
     const { id } = req.params;
     const { email, role, inActive, password } = req.body;
     
-    // Gérer la mise à jour du mot de passe si fourni
     if (password) {
         bcrypt.hash(password, 10, (hashErr, hashedPassword) => {
             if (hashErr) return res.status(500).json({ error: "Erreur de hachage du mot de passe" });
             User.updatePassword(id, hashedPassword, (updateErr) => {
                 if (updateErr) return res.status(500).json({ error: "Erreur mise à jour mot de passe", details: updateErr.message });
-                // Continuer la mise à jour des autres champs si nécessaire
                 User.update(id, { email, role, inActive }, (err) => {
                     if (err) return res.status(500).json({ error: "Erreur lors de la mise à jour de l'utilisateur", details: err.message });
                     res.status(200).json({ message: "Utilisateur mis à jour avec succès" });

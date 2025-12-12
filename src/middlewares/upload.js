@@ -4,9 +4,15 @@ const fs = require('fs');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const studentMatricule = req.body.matricule || 'inconnu';
+        let subfolder;
+        if (file.fieldname === 'sujet') {
+            subfolder = 'subjects';
+        } else {
+            const studentMatricule = req.body.matricule || 'inconnu';
+            subfolder = path.join('submissions', studentMatricule);
+        }
         
-        const uploadPath = path.join('uploads', 'submissions', studentMatricule);
+        const uploadPath = path.join('uploads', subfolder);
 
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
