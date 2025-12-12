@@ -14,7 +14,17 @@ db.serialize(() => {
         role TEXT,
         inActive BOOLEAN DEFAULT 0
     )`);
-
+db.run(
+  `INSERT INTO users (email, password, role, inActive) VALUES (?, ?, ?, ?)`,
+  ["test@example.com", "$2b$10$h.8Kcubb8/hF2YzMKUu5aeWOsUbSs09K9rOFlxzTfOclFCul5fxHO", "etudiant", 0],
+  function (err) {
+    if (err) {
+      console.error("Error inserting user:", err.message);
+    } else {
+      console.log("User created with ID:", this.lastID);
+    }
+  }
+);
     db.run(`CREATE TABLE IF NOT EXISTS profile (
         id_user INTEGER,
         email TEXT,
