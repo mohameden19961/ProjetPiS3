@@ -21,7 +21,6 @@ exports.createExam = (req, res) => {
     });
 };
 
-// Récupérer l'examen en cours (Étudiant)
 exports.getExam = (req, res) => {
     Examen.getLatest((err, exam) => {
         if (err || !exam) return res.status(404).json({ error: "Aucun examen disponible" });
