@@ -1,37 +1,46 @@
 const User = require('../models/User');
 const Profile = require('../models/Profile');
 const Ens = require('../models/Ens');
+const bcrypt = require('bcrypt');
 
-exports.register = (req, res) => {
+exports.register = async (req, res) => {
     const { email, password, role, matricule, level, nom, noms_ens } = req.body;
 
-    User.create({ email, password, role }, function(err) {
-        if (err) return res.status(500).json({ error: "Erreur lors de la création de l'utilisateur" });
+    try {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        const userId = this.lastID;
+        User.create({ email, password: hashedPassword, role }, function(err) {
+            if (err) return res.status(500).json({ error: "Erreur lors de la création de l'utilisateur" });
 
-        if (role === 'etudiant') {
-            Profile.create({ id_user: userId, email, matricule, level, nom }, (err) => {
-                if (err) return res.status(500).json({ error: "Erreur profil étudiant" });
-                res.status(201).json({ message: "Étudiant créé avec succès" });
-            });
-        } 
-        else if (role === 'prof') {
-            Ens.create(noms_ens || nom, email, (err) => {
-                if (err) return res.status(500).json({ error: "Erreur profil enseignant" });
-                res.status(201).json({ message: "Enseignant créé avec succès" });
-            });
-        }
-    });
+            const userId = this.lastID;
+
+            if (role === 'etudiant') {
+                Profile.create({ id_user: userId, email, matricule, level, nom }, (err) => {
+                    if (err) return res.status(500).json({ error: "Erreur profil étudiant" });
+                    res.status(201).json({ message: "Étudiant créé avec succès" });
+                });
+            } 
+            else if (role === 'prof') {
+                Ens.create(noms_ens || nom, email, (err) => {
+                    if (err) return res.status(500).json({ error: "Erreur profil enseignant" });
+                    res.status(201).json({ message: "Enseignant créé avec succès" });
+                });
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Erreur de hachage" });
+    }
 };
 
 exports.login = (req, res) => {
     const { email, password } = req.body;
 
-    User.findByEmail(email, (err, user) => {
+    User.findByEmail(email, async (err, user) => {
         if (err || !user) return res.status(404).json({ error: "Utilisateur non trouvé" });
         
-        if (user.password !== password) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
             return res.status(401).json({ error: "Mot de passe incorrect" });
         }
 
