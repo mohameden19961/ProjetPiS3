@@ -1,0 +1,4 @@
+node_modules/
+src/database/exam_local.db
+uploads/
+.env
